@@ -16,6 +16,8 @@ public:
     Task getTask(int index) const;
     const QList<Task>& getTasks() const;
     void setTasks(const QList<Task>& taskList);
+    int getActualIndex(int displayIndex) const;
+    void applyFilter(const QString& filterType);
 
 private slots:
     void onItemChanged(QListWidgetItem* item);
@@ -25,10 +27,13 @@ signals:
 
 private:
     QList<Task>tasks;
+    QList<int>filteredIndices;
+    QString currentFilter = "All Tasks";
 
     void updateDisplay();
     void updateTaskAppearance(QListWidgetItem* item, const Task& task);
-
+    bool matchesFilter(const Task& task, const QString& filter);
+    void applyCurrentFilter();
 };
 
 #endif // TASKLISTWIDGET_H

@@ -36,7 +36,21 @@ const QList<Task>& TaskListWidget::getTasks() const { return tasks; }
 void TaskListWidget::setTasks(const QList<Task>& taskList)
 {
     tasks = taskList;
-    updateDisplay();
+    applyCurrentFilter();
+}
+
+int TaskListWidget::getActualIndex(int displayIndex) const
+{
+    if (displayIndex >= 0 && displayIndex < filteredIndices.size()) {
+        return filteredIndices[displayIndex];
+    }
+    return -1;
+}
+
+void TaskListWidget::applyFilter(const QString& filterType)
+{
+    currentFilter = filterType;
+    applyCurrentFilter();
 }
 
 void TaskListWidget::onItemChanged(QListWidgetItem* item) {
@@ -50,11 +64,15 @@ void TaskListWidget::onItemChanged(QListWidgetItem* item) {
 
 void TaskListWidget::updateDisplay() {
     clear();
-    for (const Task& task : tasks) {
-        QListWidgetItem* item = new QListWidgetItem();
-        updateTaskAppearance(item, task);
-        item->setCheckState(task.completed ? Qt::Checked : Qt::Unchecked);
-        addItem(item);
+    for (int i = 0; i < filteredIndices.size(); ++i) {
+        int actualIndex = filteredIndices[i];
+        if (actualIndex >= 0 && actualIndex < tasks.size()) {
+            const Task& task = tasks[actualIndex];
+            QListWidgetItem* item = new QListWidgetItem();
+            updateTaskAppearance(item, task);
+            item->setCheckState(task.completed ? Qt::Checked : Qt::Unchecked);
+            addItem(item);
+        }
     }
     connect(this, &QListWidget::itemChanged, this, &TaskListWidget::onItemChanged);
 }
@@ -83,6 +101,34 @@ void TaskListWidget::updateTaskAppearance(QListWidgetItem* item, const Task& tas
         }
     }
     item->setFont(font);
+}
+
+bool TaskListWidget::matchesFilter(const Task& task, const QString& filter) {
+    if (filter == "All Tasks") {
+        return true;
+    } else if (filter == "Pending") {
+        return !task.completed;
+    } else if (filter == "Completed") {
+        return task.completed;
+    } else if (filter == "High Priority") {
+        return task.priority == "High";
+    } else if (filter == "Due Today") {
+        QDate today = QDate::currentDate();
+        return task.dueDate.date() == today;
+    }
+    return true;
+}
+
+void TaskListWidget::applyCurrentFilter() {
+    filteredIndices.clear();
+
+    for (int i = 0; i < tasks.size(); ++i) {
+        if (matchesFilter(tasks[i], currentFilter)) {
+            filteredIndices.append(i);
+        }
+    }
+
+    updateDisplay();
 }
 
 

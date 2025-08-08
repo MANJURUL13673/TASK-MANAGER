@@ -117,8 +117,7 @@ void TaskManager::onTaskToggled(int index)
 void TaskManager::filterTasks()
 {
     QString filter = filterCombo->currentText();
-    // Implementation for filtering would go here
-    // For now, this is a placeholder
+    taskList->applyFilter(filter);
 }
 
 void TaskManager::setupUI()
