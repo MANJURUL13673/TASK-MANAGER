@@ -1,0 +1,37 @@
+# ninja log v6
+10	2526	7763779692844853	TaskManager_autogen/timestamp	240dbce867d7b070
+2553	6679	7763779694536203	CMakeFiles/TaskManager.dir/tasklistwidget.cpp.obj	335ef72c5a1e5edb
+10	2526	7763779692844853	TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+10	2526	7763779692844853	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+2534	12247	7763779694351862	CMakeFiles/TaskManager.dir/TaskManager_autogen/mocs_compilation.cpp.obj	ddacd6d8ee715120
+10	2526	7763779692844853	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/timestamp	240dbce867d7b070
+2540	12232	7763779694416385	CMakeFiles/TaskManager.dir/main.cpp.obj	d60db348db305274
+2546	12308	7763779694470237	CMakeFiles/TaskManager.dir/taskmanager.cpp.obj	9c6a69c29bb9428f
+12308	12724	7763779792089955	TaskManager.exe	481733fe7279de1f
+50	364	7763785765877043	TaskManager_autogen/timestamp	240dbce867d7b070
+50	364	7763785765877043	TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+50	364	7763785765877043	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/timestamp	240dbce867d7b070
+50	364	7763785765877043	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+45	284	7763788331787775	TaskManager_autogen/timestamp	240dbce867d7b070
+45	284	7763788331787775	TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+45	284	7763788331787775	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/timestamp	240dbce867d7b070
+45	284	7763788331787775	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+284	2317	7763788334182290	CMakeFiles/TaskManager.dir/task.cpp.obj	7201e849d31cef8f
+2317	2705	7763788354512562	TaskManager.exe	f91f24bf26441bc0
+40	2569	7763791234077110	TaskManager_autogen/timestamp	240dbce867d7b070
+40	2569	7763791234077110	TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+40	2569	7763791234077110	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/timestamp	240dbce867d7b070
+40	2569	7763791234077110	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+2589	7745	7763791235566603	CMakeFiles/TaskManager.dir/tasklistwidget.cpp.obj	335ef72c5a1e5edb
+2578	13517	7763791235450854	CMakeFiles/TaskManager.dir/main.cpp.obj	d60db348db305274
+2571	13622	7763791235380569	CMakeFiles/TaskManager.dir/TaskManager_autogen/mocs_compilation.cpp.obj	ddacd6d8ee715120
+2584	13637	7763791235506056	CMakeFiles/TaskManager.dir/taskmanager.cpp.obj	9c6a69c29bb9428f
+61	4329	7763791485321225	TaskManager_autogen/timestamp	240dbce867d7b070
+61	4329	7763791485321225	TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+61	4329	7763791485321225	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/timestamp	240dbce867d7b070
+61	4329	7763791485321225	E:/PERSONAL/My Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskManager_autogen/mocs_compilation.cpp	240dbce867d7b070
+4361	21420	7763791488484261	CMakeFiles/TaskManager.dir/tasklistwidget.cpp.obj	335ef72c5a1e5edb
+4341	35004	7763791488286879	CMakeFiles/TaskManager.dir/main.cpp.obj	d60db348db305274
+4331	35011	7763791488187644	CMakeFiles/TaskManager.dir/TaskManager_autogen/mocs_compilation.cpp.obj	ddacd6d8ee715120
+4352	35204	7763791488389562	CMakeFiles/TaskManager.dir/taskmanager.cpp.obj	9c6a69c29bb9428f
+35204	36074	7763791797557392	TaskManager.exe	f91f24bf26441bc0
