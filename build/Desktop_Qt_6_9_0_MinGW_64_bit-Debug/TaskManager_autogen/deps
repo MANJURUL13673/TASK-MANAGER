@@ -427,6 +427,8 @@ TaskManager_autogen/timestamp: \
 	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QMainWindow \
 	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QScrollerProperties \
 	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QSplitter \
+	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QTreeWidget \
+	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QTreeWidgetItem \
 	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QtWidgets \
 	C:/Qt/6.9.0/mingw_64/include/QtWidgets/QtWidgetsDepends \
 	C:/Qt/6.9.0/mingw_64/include/QtWidgets/qabstractbutton.h \
@@ -1118,4 +1120,6 @@ TaskManager_autogen/timestamp: \
 	E:/PERSONAL/My\ Work/TaskManager/tasklistwidget.h \
 	E:/PERSONAL/My\ Work/TaskManager/taskmanager.cpp \
 	E:/PERSONAL/My\ Work/TaskManager/taskmanager.h \
+	E:/PERSONAL/My\ Work/TaskManager/tasktreewidget.cpp \
+	E:/PERSONAL/My\ Work/TaskManager/tasktreewidget.h \
 	C:/Qt/Tools/CMake_64/bin/cmake.exe

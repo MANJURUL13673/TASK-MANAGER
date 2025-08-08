@@ -5,7 +5,7 @@
 #include <QtWidgets>
 #include <QSplitter>
 
-#include "tasklistwidget.h"
+#include "tasktreewidget.h"
 
 class TaskManager : public QMainWindow
 {
@@ -17,11 +17,12 @@ public:
 
 private slots:
     void addTask();
+    void addSubtask();
     void editTask();
     void updateTask();
     void deleteTask();
     void onTaskSelectionChanged();
-    void onTaskToggled(int index);
+    void onTaskToggled(const QString& taskId);
     void filterTasks();
 
 
@@ -29,9 +30,9 @@ private:
     QWidget* centralWidget;
     QSplitter* mainSplitter;
 
-    // Left panel - Task list
+    // Left panel - Task tree
     QWidget* leftPanel;
-    TaskListWidget* taskList;
+    TaskTreeWidget* taskTree;
     QComboBox* filterCombo;
 
     // Right panel - Task input and details
@@ -41,12 +42,13 @@ private:
     QDateTimeEdit* dueDateEdit;
     QComboBox* priorityCombo;
     QPushButton* addButton;
+    QPushButton* addSubtaskButton;
     QPushButton* editButton;
     QPushButton* updateButton;
     QPushButton* deleteButton;
     QLabel* taskDetailsLabel;
 
-    int currentEditIndex = -1;
+    QString currentEditId;
 
     void setupUI();
     void setupLeftPanel();

@@ -361,6 +361,12 @@
 			"MU",
 			"EWIEGA46WW/moc_taskmanager.cpp",
 			null
+		],
+		[
+			"E:/PERSONAL/My Work/TaskManager/tasktreewidget.h",
+			"MU",
+			"EWIEGA46WW/moc_tasktreewidget.cpp",
+			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
@@ -437,7 +443,8 @@
 		[ "E:/PERSONAL/My Work/TaskManager/main.cpp", "MU", null ],
 		[ "E:/PERSONAL/My Work/TaskManager/task.cpp", "MU", null ],
 		[ "E:/PERSONAL/My Work/TaskManager/tasklistwidget.cpp", "MU", null ],
-		[ "E:/PERSONAL/My Work/TaskManager/taskmanager.cpp", "MU", null ]
+		[ "E:/PERSONAL/My Work/TaskManager/taskmanager.cpp", "MU", null ],
+		[ "E:/PERSONAL/My Work/TaskManager/tasktreewidget.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],

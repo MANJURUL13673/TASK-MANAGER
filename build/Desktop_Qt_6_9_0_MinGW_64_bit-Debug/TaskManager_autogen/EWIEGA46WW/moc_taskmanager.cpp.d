@@ -423,11 +423,11 @@ E:/PERSONAL/My\ Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskM
   C:/Qt/6.9.0/mingw_64/include/QtGui/qwindowsmimeconverter.h \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QCommonStyle \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QLayout \
-  C:/Qt/6.9.0/mingw_64/include/QtWidgets/QListWidget \
-  C:/Qt/6.9.0/mingw_64/include/QtWidgets/QListWidgetItem \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QMainWindow \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QScrollerProperties \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QSplitter \
+  C:/Qt/6.9.0/mingw_64/include/QtWidgets/QTreeWidget \
+  C:/Qt/6.9.0/mingw_64/include/QtWidgets/QTreeWidgetItem \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QtWidgets \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/QtWidgetsDepends \
   C:/Qt/6.9.0/mingw_64/include/QtWidgets/qabstractbutton.h \
@@ -902,4 +902,4 @@ E:/PERSONAL/My\ Work/TaskManager/build/Desktop_Qt_6_9_0_MinGW_64_bit-Debug/TaskM
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wchar.h \
   C:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/wctype.h \
   E:/PERSONAL/My\ Work/TaskManager/task.h \
-  E:/PERSONAL/My\ Work/TaskManager/tasklistwidget.h
+  E:/PERSONAL/My\ Work/TaskManager/tasktreewidget.h

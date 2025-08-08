@@ -24,20 +24,41 @@ void TaskManager::addTask()
     Task task(title, descEdit->toPlainText(), dueDateEdit->dateTime(),
               priorityCombo->currentText(), false);
 
-    taskList->addTask(task);
+    taskTree->addTask(task);
     clearInputs();
     saveTasks();
 }
 
+void TaskManager::addSubtask() {
+    if (!taskTree->canAddSubtask()) {
+        QMessageBox::warning(this, "Warning", "Please select a parent task first.");
+        return;
+    }
+
+    QString title = titleEdit->text().trimmed();
+    if (title.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a subtask title.");
+        return;
+    }
+
+    QString parentId = taskTree->getSelectedTaskId();
+    Task subtask(title, descEdit->toPlainText(), dueDateEdit->dateTime(),
+                 priorityCombo->currentText(), false);
+
+    taskTree->addSubtask(parentId, subtask);
+    clearInputs();
+    saveTasks();
+}
+
+
 void TaskManager::editTask()
 {
-    int index = taskList->currentRow();
-    if (index < 0) {
+    Task task = taskTree->getSelectedTask();
+    if (task.id.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please select a task to edit.");
         return;
     }
 
-    Task task = taskList->getTask(index);
     titleEdit->setText(task.title);
     descEdit->setPlainText(task.description);
     dueDateEdit->setDateTime(task.dueDate);
@@ -45,7 +66,7 @@ void TaskManager::editTask()
 
     editButton->setEnabled(false);
     updateButton->setEnabled(true);
-    currentEditIndex = index;
+    currentEditId = task.id;
 }
 
 void TaskManager::updateTask()
@@ -56,60 +77,79 @@ void TaskManager::updateTask()
         return;
     }
 
-    Task task(title, descEdit->toPlainText(), dueDateEdit->dateTime(),
-              priorityCombo->currentText(), taskList->getTask(currentEditIndex).completed);
-    task.createdDate = taskList->getTask(currentEditIndex).createdDate;
+    if (currentEditId.isEmpty()) return;
 
-    taskList->updateTask(currentEditIndex, task);
+    Task task(title, descEdit->toPlainText(), dueDateEdit->dateTime(),
+              priorityCombo->currentText(), false);
+
+    taskTree->updateTask(currentEditId, task);
     clearInputs();
     editButton->setEnabled(true);
     updateButton->setEnabled(false);
-    currentEditIndex = -1;
+    currentEditId.clear();
     saveTasks();
 }
 
 void TaskManager::deleteTask()
 {
-    int index = taskList->currentRow();
-    if (index < 0) {
+    QString taskId = taskTree->getSelectedTaskId();
+    if (taskId.isEmpty()) {
         QMessageBox::warning(this, "Warning", "Please select a task to delete.");
         return;
     }
 
+    Task task = taskTree->getSelectedTask();
+    QString message = "Are you sure you want to delete this task?";
+    if (task.hasSubtasks()) {
+        message += "\n\nThis will also delete all subtasks!";
+    }
+
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Confirm Delete",
-                                                              "Are you sure you want to delete this task?", QMessageBox::Yes | QMessageBox::No);
+                                                              message, QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::Yes) {
-        taskList->removeTask(index);
+        taskTree->removeTask(taskId);
         saveTasks();
     }
 }
 
 void TaskManager::onTaskSelectionChanged()
 {
-    int index = taskList->currentRow();
-    editButton->setEnabled(index >= 0);
-    deleteButton->setEnabled(index >= 0);
+    Task task = taskTree->getSelectedTask();
+    bool hasSelection = !task.id.isEmpty();
 
-    if (index >= 0) {
-        Task task = taskList->getTask(index);
+    editButton->setEnabled(hasSelection);
+    deleteButton->setEnabled(hasSelection);
+    addSubtaskButton->setEnabled(hasSelection);
+
+    if (hasSelection) {
+        QString statusText = task.completed ? "Completed" : "Pending";
+        if (task.hasSubtasks()) {
+            int progress = taskTree->getTaskProgress(task.id);
+            statusText += QString(" (%1% subtasks complete)").arg(progress);
+        }
+
         taskDetailsLabel->setText(QString(
                                       "<b>Created:</b> %1<br>"
                                       "<b>Due Date:</b> %2<br>"
                                       "<b>Priority:</b> %3<br>"
-                                      "<b>Status:</b> %4<br><br>"
-                                      "<b>Description:</b><br>%5")
+                                      "<b>Status:</b> %4<br>"
+                                      "<b>Type:</b> %5<br>"
+                                      "<b>Subtasks:</b> %6<br><br>"
+                                      "<b>Description:</b><br>%7")
                                       .arg(task.createdDate.toString("MMM dd, yyyy hh:mm"))
                                       .arg(task.dueDate.toString("MMM dd, yyyy hh:mm"))
                                       .arg(task.priority)
-                                      .arg(task.completed ? "Completed" : "Pending")
+                                      .arg(statusText)
+                                      .arg(task.isMainTask() ? "Main Task" : "Subtask")
+                                      .arg(task.subtaskIds.size())
                                       .arg(task.description));
     } else {
         taskDetailsLabel->clear();
     }
 }
 
-void TaskManager::onTaskToggled(int index)
+void TaskManager::onTaskToggled(const QString& taskId)
 {
     saveTasks();
 }
@@ -117,7 +157,7 @@ void TaskManager::onTaskToggled(int index)
 void TaskManager::filterTasks()
 {
     QString filter = filterCombo->currentText();
-    taskList->applyFilter(filter);
+    taskTree->applyFilter(filter);
 }
 
 void TaskManager::setupUI()
@@ -138,9 +178,9 @@ void TaskManager::setupUI()
     QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
     mainLayout->addWidget(mainSplitter);
 
-    setWindowTitle("Task Manager");
-    setMinimumSize(800, 600);
-    resize(1000, 700);
+    setWindowTitle("Task Manager - with Subtasks");
+    setMinimumSize(900, 600);
+    resize(1200, 700);
 }
 
 void TaskManager::setupLeftPanel()
@@ -151,15 +191,16 @@ void TaskManager::setupLeftPanel()
     // Filter
     QLabel* filterLabel = new QLabel("Filter:");
     filterCombo = new QComboBox();
-    filterCombo->addItems({"All Tasks", "Pending", "Completed", "High Priority", "Due Today"});
+    filterCombo->addItems({"All Tasks", "Pending", "Completed", "High Priority",
+                           "Due Today", "Main Tasks Only"});
 
-    // Task list
-    taskList = new TaskListWidget();
+    // Task tree
+    taskTree = new TaskTreeWidget();
 
     leftLayout->addWidget(filterLabel);
     leftLayout->addWidget(filterCombo);
     leftLayout->addWidget(new QLabel("Tasks:"));
-    leftLayout->addWidget(taskList);
+    leftLayout->addWidget(taskTree);
 
 }
 
@@ -196,8 +237,11 @@ void TaskManager::setupRightPanel()
     inputLayout->addWidget(priorityCombo);
 
     // Buttons
-    QHBoxLayout* buttonLayout = new QHBoxLayout();
-    addButton = new QPushButton("Add Task");
+    QHBoxLayout* buttonLayout1 = new QHBoxLayout();
+    QHBoxLayout* buttonLayout2 = new QHBoxLayout();
+
+    addButton = new QPushButton("Add Main Task");
+    addSubtaskButton = new QPushButton("Add Subtask");
     editButton = new QPushButton("Edit Task");
     updateButton = new QPushButton("Update Task");
     deleteButton = new QPushButton("Delete Task");
@@ -205,11 +249,13 @@ void TaskManager::setupRightPanel()
     editButton->setEnabled(false);
     updateButton->setEnabled(false);
     deleteButton->setEnabled(false);
+    addSubtaskButton->setEnabled(false);
 
-    buttonLayout->addWidget(addButton);
-    buttonLayout->addWidget(editButton);
-    buttonLayout->addWidget(updateButton);
-    buttonLayout->addWidget(deleteButton);
+    buttonLayout1->addWidget(addButton);
+    buttonLayout1->addWidget(addSubtaskButton);
+    buttonLayout2->addWidget(editButton);
+    buttonLayout2->addWidget(updateButton);
+    buttonLayout2->addWidget(deleteButton);
 
     // Task details
     QGroupBox* detailsGroup = new QGroupBox("Task Details");
@@ -223,18 +269,20 @@ void TaskManager::setupRightPanel()
     detailsLayout->addWidget(taskDetailsLabel);
 
     rightLayout->addWidget(inputGroup);
-    rightLayout->addLayout(buttonLayout);
+    rightLayout->addLayout(buttonLayout1);
+    rightLayout->addLayout(buttonLayout2);
     rightLayout->addWidget(detailsGroup);
     rightLayout->addStretch();
 }
 
 void TaskManager::connectSignals() {
     connect(addButton, &QPushButton::clicked, this, &TaskManager::addTask);
+    connect(addSubtaskButton, &QPushButton::clicked, this, &TaskManager::addSubtask);
     connect(editButton, &QPushButton::clicked, this, &TaskManager::editTask);
     connect(updateButton, &QPushButton::clicked, this, &TaskManager::updateTask);
     connect(deleteButton, &QPushButton::clicked, this, &TaskManager::deleteTask);
-    connect(taskList, &QListWidget::currentRowChanged, this, &TaskManager::onTaskSelectionChanged);
-    connect(taskList, &TaskListWidget::taskToggled, this, &TaskManager::onTaskToggled);
+    connect(taskTree, &QTreeWidget::currentItemChanged, this, &TaskManager::onTaskSelectionChanged);
+    connect(taskTree, &TaskTreeWidget::taskToggled, this, &TaskManager::onTaskToggled);
     connect(filterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TaskManager::filterTasks);
 }
 
@@ -248,10 +296,10 @@ void TaskManager::clearInputs() {
 void TaskManager::saveTasks() {
     QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(dataDir);
-    QString filePath = dataDir + "/tasks.json";
+    QString filePath = dataDir + "/tasks_with_subtasks.json";
 
     QJsonArray jsonArray;
-    for (const Task& task : taskList->getTasks()) {
+    for (const Task& task : taskTree->getAllTasks()) {
         jsonArray.append(task.toJson());
     }
 
@@ -264,8 +312,7 @@ void TaskManager::saveTasks() {
 
 void TaskManager::loadTasks() {
     QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    qDebug() << dataDir;
-    QString filePath = dataDir + "/tasks.json";
+    QString filePath = dataDir + "/tasks_with_subtasks.json";
 
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly)) {
@@ -281,6 +328,6 @@ void TaskManager::loadTasks() {
         tasks.append(Task::fromJson(value.toObject()));
     }
 
-    taskList->setTasks(tasks);
+    taskTree->setAllTasks(tasks);
 }
 
