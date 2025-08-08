@@ -4,9 +4,122 @@ TaskManager::TaskManager(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUI();
+    connectSignals();
+    loadTasks();
 }
 
-TaskManager::~TaskManager() {}
+TaskManager::~TaskManager()
+{
+    saveTasks();
+}
+
+void TaskManager::addTask()
+{
+    QString title = titleEdit->text().trimmed();
+    if (title.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a task title.");
+        return;
+    }
+
+    Task task(title, descEdit->toPlainText(), dueDateEdit->dateTime(),
+              priorityCombo->currentText(), false);
+
+    taskList->addTask(task);
+    clearInputs();
+    saveTasks();
+}
+
+void TaskManager::editTask()
+{
+    int index = taskList->currentRow();
+    if (index < 0) {
+        QMessageBox::warning(this, "Warning", "Please select a task to edit.");
+        return;
+    }
+
+    Task task = taskList->getTask(index);
+    titleEdit->setText(task.title);
+    descEdit->setPlainText(task.description);
+    dueDateEdit->setDateTime(task.dueDate);
+    priorityCombo->setCurrentText(task.priority);
+
+    editButton->setEnabled(false);
+    updateButton->setEnabled(true);
+    currentEditIndex = index;
+}
+
+void TaskManager::updateTask()
+{
+    QString title = titleEdit->text().trimmed();
+    if (title.isEmpty()) {
+        QMessageBox::warning(this, "Warning", "Please enter a task title.");
+        return;
+    }
+
+    Task task(title, descEdit->toPlainText(), dueDateEdit->dateTime(),
+              priorityCombo->currentText(), taskList->getTask(currentEditIndex).completed);
+    task.createdDate = taskList->getTask(currentEditIndex).createdDate;
+
+    taskList->updateTask(currentEditIndex, task);
+    clearInputs();
+    editButton->setEnabled(true);
+    updateButton->setEnabled(false);
+    currentEditIndex = -1;
+    saveTasks();
+}
+
+void TaskManager::deleteTask()
+{
+    int index = taskList->currentRow();
+    if (index < 0) {
+        QMessageBox::warning(this, "Warning", "Please select a task to delete.");
+        return;
+    }
+
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Confirm Delete",
+                                                              "Are you sure you want to delete this task?", QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes) {
+        taskList->removeTask(index);
+        saveTasks();
+    }
+}
+
+void TaskManager::onTaskSelectionChanged()
+{
+    int index = taskList->currentRow();
+    editButton->setEnabled(index >= 0);
+    deleteButton->setEnabled(index >= 0);
+
+    if (index >= 0) {
+        Task task = taskList->getTask(index);
+        taskDetailsLabel->setText(QString(
+                                      "<b>Created:</b> %1<br>"
+                                      "<b>Due Date:</b> %2<br>"
+                                      "<b>Priority:</b> %3<br>"
+                                      "<b>Status:</b> %4<br><br>"
+                                      "<b>Description:</b><br>%5")
+                                      .arg(task.createdDate.toString("MMM dd, yyyy hh:mm"))
+                                      .arg(task.dueDate.toString("MMM dd, yyyy hh:mm"))
+                                      .arg(task.priority)
+                                      .arg(task.completed ? "Completed" : "Pending")
+                                      .arg(task.description));
+    } else {
+        taskDetailsLabel->clear();
+    }
+}
+
+void TaskManager::onTaskToggled(int index)
+{
+    saveTasks();
+}
+
+void TaskManager::filterTasks()
+{
+    QString filter = filterCombo->currentText();
+    // Implementation for filtering would go here
+    // For now, this is a placeholder
+}
 
 void TaskManager::setupUI()
 {
@@ -115,3 +228,60 @@ void TaskManager::setupRightPanel()
     rightLayout->addWidget(detailsGroup);
     rightLayout->addStretch();
 }
+
+void TaskManager::connectSignals() {
+    connect(addButton, &QPushButton::clicked, this, &TaskManager::addTask);
+    connect(editButton, &QPushButton::clicked, this, &TaskManager::editTask);
+    connect(updateButton, &QPushButton::clicked, this, &TaskManager::updateTask);
+    connect(deleteButton, &QPushButton::clicked, this, &TaskManager::deleteTask);
+    connect(taskList, &QListWidget::currentRowChanged, this, &TaskManager::onTaskSelectionChanged);
+    connect(taskList, &TaskListWidget::taskToggled, this, &TaskManager::onTaskToggled);
+    connect(filterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TaskManager::filterTasks);
+}
+
+void TaskManager::clearInputs() {
+    titleEdit->clear();
+    descEdit->clear();
+    dueDateEdit->setDateTime(QDateTime::currentDateTime().addDays(1));
+    priorityCombo->setCurrentText("Medium");
+}
+
+void TaskManager::saveTasks() {
+    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir().mkpath(dataDir);
+    QString filePath = dataDir + "/tasks.json";
+
+    QJsonArray jsonArray;
+    for (const Task& task : taskList->getTasks()) {
+        jsonArray.append(task.toJson());
+    }
+
+    QJsonDocument doc(jsonArray);
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(doc.toJson());
+    }
+}
+
+void TaskManager::loadTasks() {
+    QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    qDebug() << dataDir;
+    QString filePath = dataDir + "/tasks.json";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return;
+    }
+
+    QByteArray data = file.readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonArray jsonArray = doc.array();
+
+    QList<Task> tasks;
+    for (const QJsonValue& value : jsonArray) {
+        tasks.append(Task::fromJson(value.toObject()));
+    }
+
+    taskList->setTasks(tasks);
+}
+
