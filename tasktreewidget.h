@@ -34,6 +34,7 @@ private:
     QMap<QString, Task> taskMap;
     QList<QString> mainTaskIds;
     QString currentFilter = "All Tasks";
+    static bool isUpdating;
 
     bool matchesFilter(const Task& task, const QString& filter);
     void applyCurrentFilter();
@@ -41,6 +42,7 @@ private:
     QTreeWidgetItem* createTaskItem(const Task& task);
     void updateTaskAppearance(QTreeWidgetItem* item, const Task& task);
     void updateParentCompletion(const QString& taskId);
+    void updateParentCompletionSafe(const QString& taskId);
 
 };
 

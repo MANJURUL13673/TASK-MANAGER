@@ -178,7 +178,7 @@ void TaskManager::setupUI()
     QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
     mainLayout->addWidget(mainSplitter);
 
-    setWindowTitle("Task Manager - with Subtasks");
+    setWindowTitle("Task Manager");
     setMinimumSize(900, 600);
     resize(1200, 700);
 }

@@ -1,6 +1,8 @@
 #include "tasktreewidget.h"
 #include <QHeaderView>
+#include <QTimer>
 
+bool TaskTreeWidget::isUpdating = false;
 TaskTreeWidget::TaskTreeWidget()
 {
     setHeaderLabels({"Task", "Due Date", "Priority", "Status"});
@@ -171,16 +173,36 @@ void TaskTreeWidget::onItemChanged(QTreeWidgetItem* item, int column)
 {
     if (column == 3) { // Status column
         QString taskId = item->data(0, Qt::UserRole).toString();
+
         if (taskMap.contains(taskId)) {
-            bool completed = item->checkState(3) == Qt::Checked;
 
-            taskMap[taskId].completed = completed;
-            updateTaskAppearance(item, taskMap[taskId]);
+            // prevent recursive call
+            if(isUpdating) return;
+            isUpdating = true;
 
-            // Update parent completion status
-            updateParentCompletion(taskId);
+            try
+            {
+                bool completed = item->checkState(3) == Qt::Checked;
 
-            emit taskToggled(taskId);
+                taskMap[taskId].completed = completed;
+                blockSignals(true);
+                updateTaskAppearance(item, taskMap[taskId]);
+                blockSignals(false);
+
+                // Update parent completion status
+                updateParentCompletion(taskId);
+
+                // Emit signal safely using QTimer to defer it
+                QTimer::singleShot(0, [this, taskId]() {
+                    emit taskToggled(taskId);
+                });
+            }
+            catch(...)
+            {
+                isUpdating = false;
+                throw;
+            }
+            isUpdating = false;
         }
     }
 }
@@ -302,27 +324,74 @@ void TaskTreeWidget::updateTaskAppearance(QTreeWidgetItem* item, const Task& tas
     }
 }
 
-void TaskTreeWidget::updateParentCompletion(const QString& taskId)
-{
-    if (!taskMap.contains(taskId)) return;
+void TaskTreeWidget::updateParentCompletionSafe(const QString& taskId) {
+    if (taskId.isEmpty() || !taskMap.contains(taskId)) return;
 
     const Task& task = taskMap[taskId];
     if (task.parentId.isEmpty() || !taskMap.contains(task.parentId)) return;
 
-    // Check if all siblings are completed
-    const Task& parent = taskMap[task.parentId];
-    bool allCompleted = true;
-    for (const QString& siblingId : parent.subtaskIds) {
-        if (taskMap.contains(siblingId) && !taskMap[siblingId].completed) {
-            allCompleted = false;
-            break;
+    QString parentId = task.parentId;
+    const Task& parent = taskMap[parentId];
+
+    // Check completion of all subtasks
+    int completedCount = 0;
+    int totalCount = 0;
+
+    for (const QString& subtaskId : parent.subtaskIds) {
+        if (taskMap.contains(subtaskId)) {
+            totalCount++;
+            if (taskMap[subtaskId].completed) {
+                completedCount++;
+            }
         }
     }
 
-    // Update parent completion status
-    if (taskMap[task.parentId].completed != allCompleted) {
-        taskMap[task.parentId].completed = allCompleted;
-        applyCurrentFilter(); // Refresh display
-        updateParentCompletion(task.parentId); // Recursive update
+    // Determine if parent should be completed
+    bool shouldBeCompleted = (totalCount > 0 && completedCount == totalCount);
+
+    // Only update if status actually changed
+    if (taskMap[parentId].completed != shouldBeCompleted) {
+        taskMap[parentId].completed = shouldBeCompleted;
+
+        // Find and update the parent item display
+        QTreeWidgetItemIterator it(this);
+        while (*it) {
+            if ((*it)->data(0, Qt::UserRole).toString() == parentId) {
+                blockSignals(true);
+                updateTaskAppearance(*it, taskMap[parentId]);
+                blockSignals(false);
+                break;
+            }
+            ++it;
+        }
+
+        // Continue up the hierarchy recursively but safely
+        updateParentCompletionSafe(parentId);
     }
+}
+
+void TaskTreeWidget::updateParentCompletion(const QString& taskId)
+{
+    // if (!taskMap.contains(taskId)) return;
+
+    // const Task& task = taskMap[taskId];
+    // if (task.parentId.isEmpty() || !taskMap.contains(task.parentId)) return;
+
+    // // Check if all siblings are completed
+    // const Task& parent = taskMap[task.parentId];
+    // bool allCompleted = true;
+    // for (const QString& siblingId : parent.subtaskIds) {
+    //     if (taskMap.contains(siblingId) && !taskMap[siblingId].completed) {
+    //         allCompleted = false;
+    //         break;
+    //     }
+    // }
+
+    // // Update parent completion status
+    // if (taskMap[task.parentId].completed != allCompleted) {
+    //     taskMap[task.parentId].completed = allCompleted;
+    //     applyCurrentFilter(); // Refresh display
+    //     updateParentCompletion(task.parentId); // Recursive update
+    // }
+    updateParentCompletionSafe(taskId);
 }
